@@ -3,5 +3,10 @@
     "python.linting.enabled": true,
     "python.linting.mypyEnabled": false,
     "python.linting.flake8Enabled": true,
-    "python.linting.flake8Args": ["--ignore=E501,F401", "--verbose"]
+    "python.linting.flake8Args": [
+        "--ignore=E501,F401,E741",
+        "--verbose"
+    ],
+    "python.pythonPath": "/Users/vaynetian/Projects/Louvre/venv/bin/python3",
+    "python.formatting.provider": "black"
 }
