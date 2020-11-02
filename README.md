@@ -1,0 +1,11 @@
+## Reference
+* [http://www.optimization-online.org/DB_FILE/2018/07/6701.pdf](http://www.optimization-online.org/DB_FILE/2018/07/6701.pdf)
+* [https://www.jstor.org/stable/pdf/40538395.pdf?refreqid=excelsior%3A45f8e8b30f21238c134498e345c1f6d2](https://www.jstor.org/stable/pdf/40538395.pdf?refreqid=excelsior%3A45f8e8b30f21238c134498e345c1f6d2)
+* [http://algo2018.hiit.fi/atmos/preproceedings/12.pdf](http://algo2018.hiit.fi/atmos/preproceedings/12.pdf)
+* [https://www3.math.tu-berlin.de/combi/MDS/summerschool11-material/flows_over_time_bereinigt.pdf](https://www3.math.tu-berlin.de/combi/MDS/summerschool11-material/flows_over_time_bereinigt.pdf)
+* [https://github.com/caiozanatelli/MaxFlow](https://github.com/caiozanatelli/MaxFlow)
+* [http://ceur-ws.org/Vol-2146/paper02.pdf](http://ceur-ws.org/Vol-2146/paper02.pdf)
+* [https://www-users.cs.umn.edu/~shekhar/talk/2010/evacuation_5_2009.pdf](https://www-users.cs.umn.edu/~shekhar/talk/2010/evacuation_5_2009.pdf)
+* [https://www.mit.edu/~dimitrib/RELAX4_doc.pdf](https://www.mit.edu/~dimitrib/RELAX4_doc.pdf)
+* [https://github.com/frangio68/Min-Cost-Flow-Class](https://github.com/frangio68/Min-Cost-Flow-Class)
+* [http://pmneila.github.io/PyMaxflow/tutorial.html](http://pmneila.github.io/PyMaxflow/tutorial.html)

@@ -6,6 +6,7 @@ import datetime
 import random
 import numpy as np
 import maxflow
+import matplotlib.pyplot as plt
 
 FloorF1 = "./data/louvre_fF1.txt"
 Floor0 = "./data/louvre_f0.txt"
@@ -102,7 +103,7 @@ def expand_time_graph1(g, mapping, sources, t):
     return eg
 
 
-def expand_time_graph2(g, mapping, sources, t):
+def expand_time_graph2(g, mapping, t):
     N = g.N * t
     graph = maxflow.GraphInt()
     graph.add_nodes(N)
@@ -118,10 +119,10 @@ def expand_time_graph2(g, mapping, sources, t):
                 if u2 < g.N * t and v2 < g.N * t:
                     graph.add_edge(u2, v2, e.capacity, 0)
 
-    for source in sources:
-        graph.add_tedge(mapping[source], 100, 0)
-        for i in range(1, t):
-            graph.add_edge(mapping[source], mapping[source] + i * g.N, pow(2, 16), 0)
+    # for source in sources:
+    #     graph.add_tedge(mapping[source], 100, 0)
+    #     for i in range(1, t):
+    #         graph.add_edge(mapping[source], mapping[source] + i * g.N, pow(2, 16), 0)
     for i in range(t):
         graph.add_tedge(mapping[999] + i * g.N, 0, pow(2, 16))
     return graph
@@ -129,26 +130,44 @@ def expand_time_graph2(g, mapping, sources, t):
 
 def binary_search_min_time():
     g, mapping, mapping_back, nodes = build_origin_graph()
-    N = 20
-    with open("./test.txt", "w") as f:
-        for size in range(2, 26, 1):
+    x = []
+    y = []
+    with open("./result.txt", "w") as f:
+        for size in range(1, 101, 1):
             l = 0
-            r = 1000
+            r = 300
             while l < r:
                 t = int((l + r) / 2.0)
-                total_success = 0
-                for i in range(N):
-                    sources = sample_tourists(nodes, int(size / 2), size, size, size)
-                    expanded_time_graph = expand_time_graph2(g, mapping, sources, t)
-                    value = expanded_time_graph.maxflow()
-                    if value >= int(size * 3.5) * 100:
-                        total_success += 1
-                print("size={}, t={}, success={}".format(size, t, total_success))
-                if total_success >= 19:
+                expanded_time_graph = expand_time_graph2(g, mapping, t)
+                total = 0
+                for level in range(len(nodes)):
+                    if level < 4:
+                        for source in nodes[level]:
+                            n = size
+                            total += n
+                            expanded_time_graph.add_tedge(mapping[source], n, 0)
+                            for j in range(5, t, 5):
+                                expanded_time_graph.add_edge(
+                                    mapping[source],
+                                    mapping[source] + j * g.N,
+                                    pow(2, 16),
+                                    0,
+                                )
+                value = expanded_time_graph.maxflow()
+                print(value)
+                print(total)
+                if value >= total * 0.9:
                     r = t
                 else:
                     l = t + 1
+                print("size={}, t={}, value={}".format(size, t, value))
             f.write("size={}, min T={}\n".format(size, l))
+            x.append(total)
+            y.append(l * 30)
+        plt.plot(x, y, "ro")
+        plt.xlabel("volume of tourists")
+        plt.ylabel("min time")
+        plt.show()
 
 
 def sample_tourists(nodes, ff1, f0, f1, f2):
@@ -210,10 +229,22 @@ def test2():
 
 def test3():
     g, mapping, mapping_back, nodes = build_origin_graph()
-    sources = sample_tourists(nodes, 15, 15, 15, 15)
-    print(sources)
-    expanded_time_graph = expand_time_graph2(g, mapping, sources, 50)
+    t = 10
+    size = 1
+    expanded_time_graph = expand_time_graph2(g, mapping, t)
+    for level in range(len(nodes)):
+        if level < 4:
+            for source in nodes[level]:
+                expanded_time_graph.add_tedge(mapping[source], size, 0)
+                # for j in range(1, t):
+                #     expanded_time_graph.add_edge(
+                #         mapping[source],
+                #         mapping[source] + j * g.N,
+                #         pow(2, 16),
+                #         0,
+                #     )
     flow = expanded_time_graph.maxflow()
+    print(147 * size)
     print(flow)
 
 
