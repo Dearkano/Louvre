@@ -5,8 +5,17 @@ from flow1 import Graph as Graph1
 import datetime
 import random
 import numpy as np
-import maxflow
+
+# import maxflow
 import matplotlib.pyplot as plt
+import networkx as nx
+from networkx.algorithms.flow import (
+    edmonds_karp,
+    shortest_augmenting_path,
+    preflow_push,
+    dinitz,
+    boykov_kolmogorov,
+)
 
 FloorF1 = "./data/louvre_fF1.txt"
 Floor0 = "./data/louvre_f0.txt"
@@ -27,6 +36,7 @@ def build_origin_graph():
     g = FlowNetwork()
     s = set()
     nodes = {}
+    _s = 0
     for i, fp in enumerate(fps):
         data = load_data(fp)
         nodes[i] = set()
@@ -37,6 +47,7 @@ def build_origin_graph():
             nodes[i].add(int(v))
             e = FlowEdge(int(u), int(v), int(c), int(t) / 5)
             g.add_edge(e)
+            _s += 1
     g.set_N(len(s))
     mapping = {}
     mapping_back = {}
@@ -45,6 +56,7 @@ def build_origin_graph():
         mapping[v] = i
         mapping_back[i] = v
         i += 1
+    print(_s)
     return g, mapping, mapping_back, nodes
 
 
@@ -248,6 +260,143 @@ def test3():
     print(flow)
 
 
+def build_nx_digraph(g, mapping, people1, people2, t):
+    G = nx.DiGraph()
+    for i in range(g.N):
+        G.add_node(i)
+    for i in range(g.N, g.N * t):
+        G.add_node(i)
+    G.add_node(g.N * t)
+
+    source = g.N * t
+    sink = g.N * t + 1
+
+    # add source
+    for i in range(g.N):
+        G.add_edge(source, i, capacity=random.randint(people1, people2))
+
+    # add sink
+    G.add_edge(mapping[999] + (t - 1) * g.N, sink, capacity=1e10)
+
+    for i in range(g.N):
+        for j in range(t - 1):
+            G.add_edge(i + j * g.N, i + (j + 1) * g.N, capacity=1e10)
+
+    for i in range(t):
+        for e_set in g.adj.values():
+            for e in e_set:
+                e1 = FlowEdge(
+                    mapping[e.u] + i * g.N,
+                    mapping[e.v] + i * g.N + e.t * g.N,
+                    e.capacity,
+                    e.t,
+                )
+                if e1.u < g.N * t and e1.v < g.N * t:
+                    G.add_edge(e1.u, e1.v, capacity=e1.capacity)
+                e2 = FlowEdge(
+                    mapping[e.v] + i * g.N,
+                    mapping[e.u] + i * g.N + e.t * g.N,
+                    e.capacity,
+                    e.t,
+                )
+                if e2.u < g.N * t and e2.v < g.N * t:
+                    G.add_edge(e2.u, e2.v, capacity=e2.capacity)
+
+    return G, source, sink
+
+
+def test_nx():
+    g, mapping, _, _ = build_origin_graph()
+    x = []
+    y = []
+    for p in range(5, 100, 5):
+        l = 0
+        r = 300
+        v = g.N * p
+        while l < r:
+            t = int((l + r) / 2)
+            G, source, sink = build_nx_digraph(g, mapping, p, p, t)
+            flowValue, flowDict = nx.maximum_flow(G, source, sink)
+            if flowValue >= v * 0.9:
+                r = t
+            else:
+                l = t + 1
+        x.append(v)
+        y.append(l)
+        print("{} in a room, evcuate time = {}".format(p, l))
+    plt.plot(x, y, "ro")
+    plt.xlabel("volume of tourists")
+    plt.ylabel("min evacuation time")
+    plt.show()
+
+
+def test_algos():
+    g, mapping, _, _ = build_origin_graph()
+    x = []
+    y = [[], [], [], [], []]
+    algos = [
+        preflow_push,
+        shortest_augmenting_path,
+        dinitz,
+        boykov_kolmogorov,
+        edmonds_karp,
+    ]
+    colors = ["red", "black", "green", "blue", "yellow"]
+    algo_names = [
+        "preflow_push",
+        "shortest_augmenting_path",
+        "dinitz",
+        "boykov_kolmogorov",
+        "edmonds_karp",
+    ]
+    for ind, algo in enumerate(algos):
+        for p in range(5, 105, 5):
+            l = 0
+            r = 150
+            v = g.N * p
+            start_time = datetime.datetime.now()
+            while l < r:
+                t = int((l + r) / 2)
+                G, source, sink = build_nx_digraph(g, mapping, p, p, t)
+                flowValue, flowDict = nx.maximum_flow(G, source, sink, flow_func=algo)
+                if flowValue >= v * 0.9:
+                    r = t
+                else:
+                    l = t + 1
+            end_time = datetime.datetime.now()
+            if ind == 0:
+                x.append(v)
+            duration = (end_time - start_time).seconds
+            y[ind].append(duration)
+            print(
+                "{} in a room, using {}, run time = {}, evacuation time = {}".format(
+                    p, algo_names[ind], duration, l
+                )
+            )
+
+    for i, line in enumerate(y):
+        plt.plot(x, line, "ro", color=colors[i], label=algo_names[i])
+    plt.xlabel("volume of tourists")
+    plt.ylabel("algo run time")
+    plt.show()
+
+
+def test5():
+    G = nx.DiGraph()
+    G.add_node("a", demand=-14)
+    G.add_node("d", demand=14)
+    G.add_edge("a", "b", weight=3, capacity=4)
+    G.add_edge("a", "c", weight=6, capacity=10)
+    G.add_edge("b", "d", weight=1, capacity=9)
+    G.add_edge("c", "d", weight=2, capacity=5)
+    flowCost, flowDict = nx.capacity_scaling(G)
+    print(flowCost)
+    print(flowDict)
+
+
 if __name__ == "__main__":
-    binary_search_min_time()
-    # test3()
+    # binary_search_min_time()
+    # test_nx()
+    # test_algos()
+    build_origin_graph()
+
